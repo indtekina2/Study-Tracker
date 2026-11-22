@@ -8,16 +8,22 @@ import { getSubjects } from '../api/subjects';
 import { createLog } from '../api/logs';
 
 const MODES = [
-  { id: 'focus', label: 'Focus', minutes: 25 },
-  { id: 'short', label: 'Short Break', minutes: 5 },
-  { id: 'long', label: 'Long Break', minutes: 15 },
+  { id: 'focus', label: 'Focus', minutes: 40 },
+  { id: 'short', label: 'Short Break', minutes: 10 },
+  { id: 'long', label: 'Long Break', minutes: 20 },
 ];
 
 const Timer = () => {
   const queryClient = useQueryClient();
   const [activeMode, setActiveMode] = useState('focus');
-  const [duration, setDuration] = useState(25 * 60);
-  const [seconds, setSeconds] = useState(25 * 60);
+  const [modeDurations, setModeDurations] = useState(() => Object.fromEntries(
+    MODES.map(({ id, minutes }) => [id, minutes])
+  ));
+  const [durationDraft, setDurationDraft] = useState(() => Object.fromEntries(
+    MODES.map(({ id, minutes }) => [id, String(minutes)])
+  ));
+  const [duration, setDuration] = useState(40 * 60);
+  const [seconds, setSeconds] = useState(40 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState('');
   const [sessions, setSessions] = useState([]);
@@ -62,12 +68,32 @@ const Timer = () => {
   }, [isRunning, activeMode, duration]);
 
   const changeMode = (modeId) => {
-    const mode = MODES.find((item) => item.id === modeId);
-    if (!mode) return;
+    const minutes = modeDurations[modeId];
+    if (!minutes) return;
     setIsRunning(false);
     setActiveMode(modeId);
-    setDuration(mode.minutes * 60);
-    setSeconds(mode.minutes * 60);
+    setDuration(minutes * 60);
+    setSeconds(minutes * 60);
+  };
+
+  const applyDurationSettings = (event) => {
+    event.preventDefault();
+    const updatedDurations = {};
+
+    for (const mode of MODES) {
+      const minutes = Number(durationDraft[mode.id]);
+      if (!Number.isInteger(minutes) || minutes < 1) {
+        toast.error('Timer durations must be whole numbers greater than zero');
+        return;
+      }
+      updatedDurations[mode.id] = minutes;
+    }
+
+    setModeDurations(updatedDurations);
+    const activeDuration = updatedDurations[activeMode] * 60;
+    setDuration(activeDuration);
+    setSeconds(activeDuration);
+    toast.success('Timer durations updated');
   };
 
   const toggleTimer = () => {
@@ -171,6 +197,44 @@ const Timer = () => {
         </section>
 
         <aside className="space-y-6">
+          <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
+            <h2 className="font-semibold text-[var(--foreground)]">Timer Durations</h2>
+            <p className="mt-1 text-sm text-[var(--muted-foreground)]">Set a duration in minutes for each mode.</p>
+            <form onSubmit={applyDurationSettings} className="mt-4 space-y-3">
+              {MODES.map((mode) => (
+                <div key={mode.id} className="flex items-center justify-between gap-4">
+                  <label htmlFor={`duration-${mode.id}`} className="text-sm font-medium text-[var(--foreground)]">
+                    {mode.label}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id={`duration-${mode.id}`}
+                      type="number"
+                      min="1"
+                      step="1"
+                      required
+                      value={durationDraft[mode.id]}
+                      onChange={(event) => setDurationDraft((current) => ({
+                        ...current,
+                        [mode.id]: event.target.value,
+                      }))}
+                      disabled={isRunning}
+                      className="w-20 rounded-lg border border-[var(--border)] bg-[var(--input)] px-3 py-2 text-right text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-60"
+                    />
+                    <span className="text-xs text-[var(--muted-foreground)]">min</span>
+                  </div>
+                </div>
+              ))}
+              <button
+                type="submit"
+                disabled={isRunning}
+                className="mt-2 w-full rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-semibold text-[var(--foreground)] transition-colors hover:bg-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Apply Durations
+              </button>
+            </form>
+          </section>
+
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
             <h2 className="font-semibold text-[var(--foreground)]">Current Session</h2>
             <div className="mt-4">
