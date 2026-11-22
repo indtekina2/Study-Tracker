@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, Clock, BarChart3, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Clock, Timer as TimerIcon, BarChart3, LogOut, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
 
@@ -8,6 +8,7 @@ const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { name: 'Subjects', path: '/subjects', icon: BookOpen },
   { name: 'Study Log', path: '/study-log', icon: Clock },
+  { name: 'Timer', path: '/timer', icon: TimerIcon },
   { name: 'Mock Tests', path: '/mock-tests', icon: BarChart3 },
 ];
 

@@ -16,6 +16,7 @@ import Subjects from './pages/Subjects';
 import SubjectDetail from './pages/SubjectDetail';
 import StudyLog from './pages/StudyLog';
 import MockTests from './pages/MockTests';
+import Timer from './pages/Timer';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -36,6 +37,7 @@ function App() {
                   <Route path="/subjects" element={<Subjects />} />
                   <Route path="/subjects/:id" element={<SubjectDetail />} />
                   <Route path="/study-log" element={<StudyLog />} />
+                  <Route path="/timer" element={<Timer />} />
                   <Route path="/mock-tests" element={<MockTests />} />
                 </Route>
               </Route>
